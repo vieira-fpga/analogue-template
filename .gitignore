@@ -1,3 +1,6 @@
 # Packaged cores, built by scripts/package_core.py
 output/*
 !output/.gitkeep
+
+# Python bytecode from importing the scripts
+__pycache__/
