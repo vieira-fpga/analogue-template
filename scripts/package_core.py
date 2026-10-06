@@ -59,9 +59,9 @@ def package(rbf: Path, out_dir: Path) -> Path:
             f"core.json lists {len(cores)} bitstreams, only 1 is supported"
         )
 
-    # Core folders on the card have no spaces, so a shortname such as
-    # "Core Template" installs to Developer.CoreTemplate.
-    core_id = f"{info['author']}.{info['shortname']}".replace(" ", "")
+    # The Pocket only loads a core whose folder matches author.shortname
+    # exactly, spaces included.
+    core_id = f"{info['author']}.{info['shortname']}"
     zip_path = out_dir / f"{core_id}_{info['version']}_{info['date_release']}.zip"
 
     # Stamp every entry with the release date so rebuilding the same release
