@@ -738,8 +738,12 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 # end ENTITY(mf_pllbase_0002)
 # ---------------------------
 set_global_assignment -name QIP_FILE apf/apf.qip
-set_global_assignment -name VERILOG_FILE core/core_top.v
-set_global_assignment -name VERILOG_FILE core/core_bridge_cmd.v
+set_global_assignment -name SYSTEMVERILOG_FILE core/core_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE core/dataslot_if.sv
+set_global_assignment -name SYSTEMVERILOG_FILE core/savestate_if.sv
+set_global_assignment -name SYSTEMVERILOG_FILE core/target_dataslot_if.sv
+set_global_assignment -name SYSTEMVERILOG_FILE core/core_bridge_cmd.sv
+set_global_assignment -name SYSTEMVERILOG_FILE core/core_top.sv
 set_global_assignment -name SDC_FILE core/core_constraints.sdc
 set_global_assignment -name SIGNALTAP_FILE core/stp1.stp
 set_global_assignment -name QIP_FILE core/mf_pllbase.qip
