@@ -1,0 +1,3 @@
+# Packaged cores, built by scripts/package_core.py
+output/*
+!output/.gitkeep

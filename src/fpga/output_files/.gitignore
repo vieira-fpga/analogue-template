@@ -1,2 +1,3 @@
-!*.sof
-!*.rbf
+# Quartus writes these on every compile
+*
+!.gitignore
