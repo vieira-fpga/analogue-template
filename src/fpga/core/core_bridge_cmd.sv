@@ -26,7 +26,7 @@ module core_bridge_cmd
   import core_pkg::*;
 (
     input  wire  clk,
-    output logic reset_n = 1'b0,
+    output logic reset_n,
 
     input  wire         bridge_endian_little,
     input  wire  [31:0] bridge_addr,
@@ -47,9 +47,9 @@ module core_bridge_cmd
 
     // rtc_valid rises once, when the host sends the time
     output rtc_t rtc,
-    output logic rtc_valid = 1'b0,
+    output logic rtc_valid,
 
-    output logic osnotify_inmenu = 1'b0,
+    output logic osnotify_inmenu,
 
     // Port A of the 1024 x 32 bit data table. The bridge uses port B.
     input  wire  [ 9:0] datatable_addr,
@@ -139,13 +139,26 @@ module core_bridge_cmd
   assign target_sel = addr.region == 8'hF8 && addr.page == 8'h10;
   assign datatable_sel = addr.region == 8'hF8 && addr.page[7:4] == 4'h2;
 
+  // Quartus ignores initial values on ports, so outputs that need a
+  // power-up value come from these.
+  logic reset_n_q = 1'b0;
+  logic rtc_valid_q = 1'b0;
+  logic osnotify_inmenu_q = 1'b0;
+
+  assign reset_n = reset_n_q;
+  assign rtc_valid = rtc_valid_q;
+  assign osnotify_inmenu = osnotify_inmenu_q;
+
   logic            [31:0] host_status;
   logic            [31:0] host_param                 [4];
   logic            [31:0] host_resp                  [4] = '{default: '0};
 
   logic                   host_cmd_start = 1'b0;
-  host_cmd_e              host_cmd_startval;
-  host_cmd_e              host_cmd;
+  // Raw command words, not host_cmd_e. Quartus assumes an enum only holds
+  // its listed values and would drop the default branch that answers
+  // unknown commands.
+  logic            [15:0] host_cmd_startval;
+  logic            [15:0] host_cmd;
   logic            [15:0] host_resultcode;
   host_state_e            host_state = HOST_IDLE;
 
@@ -185,7 +198,7 @@ module core_bridge_cmd
           host_status <= bridge_wr_data_in;
 
           if (bridge_wr_data_in[31:16] == HOST_TAG_COMMAND) begin
-            host_cmd_startval <= host_cmd_e'(bridge_wr_data_in[15:0]);
+            host_cmd_startval <= bridge_wr_data_in[15:0];
             host_cmd_start <= 1'b1;
           end
         end
@@ -266,12 +279,12 @@ module core_bridge_cmd
           end
 
           HOST_CMD_RESET_ENTER: begin
-            reset_n <= 1'b0;
+            reset_n_q  <= 1'b0;
             host_state <= HOST_DONE_OK;
           end
 
           HOST_CMD_RESET_EXIT: begin
-            reset_n <= 1'b1;
+            reset_n_q  <= 1'b1;
             host_state <= HOST_DONE_OK;
           end
 
@@ -311,7 +324,7 @@ module core_bridge_cmd
           end
 
           HOST_CMD_RTC: begin
-            rtc_valid <= 1'b1;
+            rtc_valid_q <= 1'b1;
             rtc.epoch_seconds <= host_param[0];
             rtc.date_bcd <= host_param[1];
             rtc.time_bcd <= host_param[2];
@@ -356,7 +369,7 @@ module core_bridge_cmd
           end
 
           HOST_CMD_OSNOTIFY_MENU: begin
-            osnotify_inmenu <= host_param[0][0];
+            osnotify_inmenu_q <= host_param[0][0];
             host_state <= HOST_DONE_OK;
           end
 

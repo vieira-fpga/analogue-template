@@ -118,10 +118,10 @@ module core_top
     output logic video_hs,
 
     // I2S audio to the scaler
-    output logic audio_mclk = 1'b0,
+    output logic audio_mclk,
     input  wire  audio_adc,
     output logic audio_dac,
-    output logic audio_lrck = 1'b0,
+    output logic audio_lrck,
 
     // APF bridge bus, synchronous to clk_74a. Every device sees every write.
     // Reads go through the mux below.
@@ -401,18 +401,22 @@ module core_top
   localparam int MCLK_ACCUM_BITS = $clog2(MCLK_WRAP + MCLK_STEP);
 
   logic [MCLK_ACCUM_BITS-1:0] mclk_accum = '0;
+  logic                       mclk = 1'b0;
+  logic                       lrck = 1'b0;
   logic                       mclk_rise;
   logic [                1:0] sclk_div = '0;
   logic                       sclk_fall;
   logic [                4:0] bit_count = '0;
 
-  assign mclk_rise = mclk_accum >= MCLK_WRAP && !audio_mclk;
-  assign sclk_fall = mclk_rise && sclk_div == 2'd3;
-  assign audio_dac = 1'b0;
+  assign mclk_rise  = mclk_accum >= MCLK_WRAP && !mclk;
+  assign sclk_fall  = mclk_rise && sclk_div == 2'd3;
+  assign audio_mclk = mclk;
+  assign audio_lrck = lrck;
+  assign audio_dac  = 1'b0;
 
   always_ff @(posedge clk_74a) begin
     if (mclk_accum >= MCLK_WRAP) begin
-      audio_mclk <= !audio_mclk;
+      mclk <= !mclk;
       mclk_accum <= MCLK_ACCUM_BITS'(mclk_accum - MCLK_WRAP + MCLK_STEP);
     end else begin
       mclk_accum <= MCLK_ACCUM_BITS'(mclk_accum + MCLK_STEP);
@@ -426,7 +430,7 @@ module core_top
       bit_count <= bit_count + 1'b1;
 
       if (bit_count == 5'd31) begin
-        audio_lrck <= !audio_lrck;
+        lrck <= !lrck;
       end
     end
   end
