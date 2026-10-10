@@ -1,3 +1,5 @@
-Example Core - Core Template
+Core Template by Vieira FPGA
 
-This is a template for a core containing all of the core definition JSON files and FPGA starter code.
+A starting point for Analogue Pocket cores. It draws a gray 320x240 screen, plays silence, and answers the Pocket's bridge commands.
+
+Made by Morgan Vieira
